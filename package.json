@@ -1,0 +1,15 @@
+{
+  "name": "complete-professional",
+  "version": "1.0.0",
+  "description": "a full-professional project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "Backend"
+  ],
+  "author": "Ali",
+  "license": "ISC"
+}

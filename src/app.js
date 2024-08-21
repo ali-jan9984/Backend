@@ -24,5 +24,4 @@ app.use(cookieParser());
 import { router as useRouter } from './routes/user.route.js';
 app.use("/api/v1/users", useRouter);
 
-// Export the app for use in index.js
 export { app };

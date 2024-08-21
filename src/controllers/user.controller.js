@@ -5,54 +5,56 @@ import { uploadOnCloudinary } from '../utils/Cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
+// generating access and refreshToken...
 const generateAccessAndRefreshTokens = async (_id)=>{
     try {
        const user = await User.findById(_id);
        const RefreshToken = user.generateRefreshToken();
        const AccessToken = user.generateAccessToken();
-
        user.RefreshToken = RefreshToken;
+    //    user.save method save the given field in the database...
+    // validateBeforeSave is used for not refreshing the other fields...
        user.save({validateBeforeSave:false});
        return {RefreshToken,AccessToken};
-
     } catch (error) {
         throw new ApiError(500,
             "Something went Wrong while generating Refresh and Access Token"
         );
     };
 }
-
+// registering the user in mongodb atlas...
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, userName, password } = req.body;
     // Validation for required fields
-    if ([fullName, email, userName, password].some((field) => field === "")) {
+    if (
+        [fullName, email, userName, password]
+        .some((field) => field === "")
+    )
+    {
         throw new ApiError(400, "All fields are required");
     }
-
     // Email validation
     if (!email.includes("@")) {
         throw new ApiError(400, "Invalid email");
     }
-
     // Password validation
     const specialCharacterRegex = /[!@#$%^&*(),.?":{}|<>]/;
     const numberRegex = /\d/;
     const lowercaseLetterRegex = /[a-z]/;
     const uppercaseLetterRegex = /[A-Z]/;
-
     if (
         !specialCharacterRegex.test(password) ||
         !numberRegex.test(password) ||
         !lowercaseLetterRegex.test(password) ||
         !uppercaseLetterRegex.test(password)
     ) {
-        throw new ApiError(400, "Password must include at least one special character, one number, one lowercase letter, and one uppercase letter.");
+        throw new ApiError(400, 
+            "Password must include at least one special character, one number, one lowercase letter, and one uppercase letter."
+        );
     }
-
     if (password.length < 8) {
         throw new ApiError(400, "Password must be at least 8 characters long");
     }
-
     // Check if user already exists
     const existedUser = await User.findOne({
         $or: [{ userName }, { email }]
@@ -61,14 +63,14 @@ const registerUser = asyncHandler(async (req, res) => {
     if (existedUser) {
         throw new ApiError(400, "User already exists");
     }
-
     // Handling avatar and cover image files
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
     // const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
-    console.log(req.files)
-
     let coverImageLocalPath;
-    if (req.files && Array.isArray(req.files.coverImageLocalPath) && req.files.coverImage.length> 0){
+    if (req.files && 
+    Array.isArray(req.files.coverImageLocalPath) && 
+    req.files.coverImage.length> 0)
+    {
         coverImageLocalPath = req.files.coverImage[0].path;
     }
 
@@ -80,10 +82,9 @@ const registerUser = asyncHandler(async (req, res) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = coverImageLocalPath ? await uploadOnCloudinary(coverImageLocalPath) : null;
 
-    if (!avatar || !avatar.url) {
+    if (!(avatar || avatar.url)) {
         throw new ApiError(400, "Avatar upload failed");
     }
-
     // Create user in the database
     const user = await User.create({
         fullName,
@@ -93,8 +94,8 @@ const registerUser = asyncHandler(async (req, res) => {
         userName:userName.toLowerCase(),
         password
     });
-
-    const createdUser = await User.findById(user._id).select("-password -refreshToken");
+    const createdUser = await User.findById(user._id)
+    .select("-password -refreshToken");
 
     if (!createdUser) {
         throw new ApiError(500, 'Something went wrong while registering the user');
@@ -104,7 +105,7 @@ const registerUser = asyncHandler(async (req, res) => {
         new ApiResponse(201, createdUser, "User registered successfully")
     );
 });
-
+// loginning the user after registration...
 const loginUser = asyncHandler(async (req, res) => {
     const { email, userName, password } = req.body;
     
@@ -148,8 +149,7 @@ const loginUser = asyncHandler(async (req, res) => {
              "User logged in successfully")
         );
 });
-
-
+// Logout the user if the user is login only...
 const logoutUser = asyncHandler(async(req,res)=>{
     // remove the access token from cookies
     // remove the refresh token from database
@@ -176,7 +176,7 @@ const logoutUser = asyncHandler(async(req,res)=>{
         (200,"User logout Successfully")
     );
 });
-
+// refreshing the access and refresh token by cookies...
 const refreshAccessToken = asyncHandler(async(req,res)=>{
    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
    if(!incomingRefreshToken){
@@ -213,6 +213,24 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
   } catch (error) {
     throw new ApiError(401,error?.message || "invalid Refresh Token")
   }  
+});
+// changing password after user register...
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword,confirmPassword} = req.body;
+    const user = await User.findById(req.user?.id);
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    if(!(newPassword === confirmPassword)){
+        throw new ApiError(400,"Password does not match");
+    }
+    if (!isPasswordCorrect){
+        throw new ApiError(401,"invalid oldPassword");
+    }
+    user.password = newPassword;
+    await user.save({validateBeforeSave:false})
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,"Password changed successfully"))
 })
 
-export { registerUser , loginUser ,logoutUser,refreshAccessToken};
+export { registerUser , loginUser , logoutUser , refreshAccessToken };

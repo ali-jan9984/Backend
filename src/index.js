@@ -1,12 +1,8 @@
 import dotenv from 'dotenv';
 import connectDB from './db/index.js';
-import { app } from './app.js'; // Import the app from app.js
+import { app } from './app.js'; 
 
-// Load environment variables
 dotenv.config();
-
-// Debugging: Check if the environment variable is loaded
-console.log('MongoDB URI:', process.env.MONGODB_URI);
 
 connectDB()
   .then(() => {
@@ -17,7 +13,7 @@ connectDB()
   })
   .catch((error) => {
     console.error('MongoDB connection failed:', error);
-    process.exit(1); // Exit if the connection fails
+    process.exit(1);
   });
 
 

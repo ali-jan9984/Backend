@@ -10,7 +10,7 @@ console.log('MongoDB URI:', process.env.MONGODB_URI);
 
 connectDB()
   .then(() => {
-    const PORT = process.env.PORT || 8000;
+    const PORT =process.env.PORT || 8000;
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

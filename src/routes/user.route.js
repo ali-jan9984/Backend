@@ -5,6 +5,7 @@ import { verifyJWT } from "../middlewares/AUTH.middlewares.js";
 import { refreshAccessToken } from "../controllers/user.controller.js";
 
 const router = Router();
+// test successfully
 router.route("/register").post(
     upload.fields(
         [
@@ -19,6 +20,7 @@ router.route("/register").post(
     ]),
     registerUser
 );
+// test successfully
 router.route("/login").post(loginUser);
 // secured routes
 // test successfully

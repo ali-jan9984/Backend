@@ -108,8 +108,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 // loginning the user after registration...
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, userName, password } = req.body;
-    
+    const { email,userName, password } = req.body;  
     // if (!(email || userName)) {
     //     throw new ApiError(400, "Username or email is required");
     // };
@@ -243,24 +242,30 @@ const getCurrentUser = asyncHandler(async (req,res)=>{
     .json(new ApiResponse(200,req.user,"currentUser fetch successfully"));
 });
 // updating account details but not the images after user login...
-const updateAccountDetails = asyncHandler(async(req,res)=>{
-    const {fullName,userName,email} = req.body;
-    if (!(email || userName)){
-        throw new ApiError(400,"Please fill all fields");
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { fullName, userName, email } = req.body;
+
+    // Validate required fields
+    if (!email || !userName) {
+        throw new ApiError(400, "Please fill all fields");
     }
-    const user = User.findByIdAndUpdate(req.user._id,
-        {
-            $set:{
-                fullName,userName,email
-            }
-        },{
-            new:true
-        }
-    ).select("-password")
-    await user.save({validateBeforeSave:false});
-    return res.status(200)
-    .json(new ApiResponse(200,user,"Account details updated successfully"));
+
+    // Update user details
+    const updatedUser = await User.findByIdAndUpdate(
+        req.user._id,
+        { fullName, userName, email },
+        { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+        throw new ApiError(400, "User not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Account details updated successfully")
+    );
 });
+
 // updating the user avatar image after logging...
 const updateAvatarImage = asyncHandler(async(req,res)=>{
    const avatarLocalPath = req.file?.path

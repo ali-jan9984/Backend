@@ -1,5 +1,5 @@
 import {upload} from '../middlewares/Multer.middleware.js';
-import { changeThumbnail, deleteVideo, getAllVideos, getVideoById, publishVideo,updateVideoData,videoViews} from "../controllers/video.controllers.js";
+import { changeThumbnail, deleteVideo, getAllVideos, getVideoById, publishVideo,togglePublisher,updateVideoData,videoViews} from "../controllers/video.controllers.js";
 import { Router } from "express";
 
 const router = Router();
@@ -17,16 +17,22 @@ router.route("/publish-video").post(
             }
         ]
     ),publishVideo
-)
+);
 
 // secure routes
 // test successfully
 router.route('/videos').get(getAllVideos);
 // test successfully
-router.route('/video/:videoId').get(getVideoById);
-router.route("/video/:videoId/updateData").patch(updateVideoData);
-router.route("/video/:videoId/views").get(videoViews);
-router.route("video/:videoId/thumbnail").patch(changeThumbnail);
-router.route("/video/:video/deleteVideo").delete(deleteVideo);
+router.route('/:videoId').get(getVideoById);
+// test successfully
+router.route("/:videoId/updateData").patch(updateVideoData);
+// test successfully
+router.route("/:videoId/thumbnail").patch(changeThumbnail);
+// equal success
+router.route("/:video/deleteVideo").delete(deleteVideo);
+// test successfully
+router.route("/:videoId/views").get(videoViews);
+// test successfully
+router.route("/:videoId/ispublished").patch(togglePublisher);
 
 export {router};

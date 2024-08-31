@@ -1,27 +1,31 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Comment } from "../models/Comments.model.js"
+import { Comment } from "../models/Comments.model.js";
 import {Video} from "../models/Video.model.js";
 
 const getVideoComment = asyncHandler(async(req,res)=>{
-    const {id} = req.params;
-    const video = await Video.findById(id).populate("comment");
-    if (!video){
-        throw new ApiError(400,"Video not found")
+    const {Id} = req.params;
+    // assuming 'videoId' is stored in the "comment" model to relate comments to a video
+    const comments = await Comment.findById({videoId:Id});
+    if (!comments.length){
+        throw new ApiError(400,"No comment found for this video");
     }
-    return res.json(video.comment);
+    return res.json(comments);
 });
 
 const addComment = asyncHandler(async(req,res)=>{
     // add a comment to a video 
     const {id} = req.params;
+    // this is the id of video
     const {content} = req.body;
+    // ensure the video exists or not
     const video = await Video.findById(id);
     if (!video){
         throw new ApiError(400,"Video not found")
     }
-    const newComment = new Comment({content});
+    // create and save the comment
+    const newComment = new Comment({content,videoId:id});
     await newComment.save();
 
     return res.status(200)
@@ -39,7 +43,7 @@ const updateComment = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"comment not found");
     }
     comment.content = content;
-    Comment.save();
+    await comment.save();
 
     return res.status(200)
     .json(

@@ -3,9 +3,16 @@ import { addComment, deleteComment, getVideoComment, updateComment } from "../co
 
 const router = Router();
 
-router.route("/getVideoComment").get(getVideoComment);
-router.route("/addComment").post(addComment);
-router.route("/updateComment").patch(updateComment);
-router.route("deleteComment").delete(deleteComment);
+// Route to get comments for a specific video
+router.route("/:videoId/getComment").get(getVideoComment);
 
-export {router};
+// Route to add a comment to a specific video
+router.route("/:videoId/addComment").post(addComment);
+
+// Route to update a specific comment
+router.route("/comments/:commentId").patch(updateComment);
+
+// Route to delete a specific comment
+router.route("/comments/:commentId").delete(deleteComment);
+
+export { router };

@@ -84,22 +84,26 @@ const getVideoById = asyncHandler(
     }
 );
 
-const updateVideoData = asyncHandler(async(req,res)=>{
-    const {videoId} = req.params;
-    const {title,description,} = req.body;
+const updateVideoData = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    const { title, description } = req.body;
+
     const video = await Video.findById(videoId);
-    if (!video){
-        throw new ApiError(400,"video not found")
+    if (!video) {
+        throw new ApiError(400, "Video not found");
     }
-    video.title = title;
-    video.description = description;
+
+    // Update only if fields are provided
+    if (title) video.title = title;
+    if (description) video.description = description;
+
     await video.save();
 
-    return res.status(200)
-    .json(
-        new ApiResponse(200,video,"Video data updated successfully")
-    )
+    return res.status(200).json(
+        new ApiResponse(200, video, "Video data updated successfully")
+    );
 });
+
 
 const videoViews = asyncHandler(async (req, res) => {
     const {videoId} = req.params;
@@ -114,13 +118,13 @@ const videoViews = asyncHandler(async (req, res) => {
 });
 
 const changeThumbnail = asyncHandler(async(req,res)=>{
-    const videoId = req.params;
-    const {thumbnail} = req.file?.thumbnail?.path;
+    const {videoId} = req.params;
+    const thumbnail = req.file?.thumbnail?.[0]?.path;
     const video = await Video.findById(videoId);
     if (!video){
         throw new ApiError(200,"video is not found")
     }
-    video.thumbnail = thumbnail;
+    if(thumbnail) video.thumbnail = thumbnail;
     await video.save();
     return res.status(200)
     .json(
@@ -141,14 +145,14 @@ const deleteVideo = asyncHandler(async(req,res)=>{
     )
 });
 
-const togglePUblisher = asyncHandler(async(req,res)=>{
+const togglePublisher = asyncHandler(async(req,res)=>{
     const {videoId} = req.params;
     const video = await Video.findById(videoId);
     if(!video){
         throw new ApiError(400,"video not found")
     }
     video.ispublished = true,
-    Video.save();
+    video.save();
 
     return res.status(200)
     .json(new ApiResponse(200,"video published successfully"))
@@ -161,5 +165,5 @@ export {
     changeThumbnail,
     deleteVideo,
     getAllVideos,
-    togglePUblisher
+    togglePublisher
 };

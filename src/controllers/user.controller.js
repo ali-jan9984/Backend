@@ -110,10 +110,12 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { email, userName, password } = req.body;
     
-    if (!(email || userName)) {
-        throw new ApiError(400, "Username or email is required");
-    };
-
+    // if (!(email || userName)) {
+    //     throw new ApiError(400, "Username or email is required");
+    // };
+    if (!email){
+        throw new ApiError(400, "Email is required");
+    }
     const user = await User.findOne({
         $or: [{ userName }, { email }]
     });
@@ -124,7 +126,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
-        throw new ApiError(401, "Invalid password");
+        throw new ApiError(401, "Password is Invalid");
     }
 
     const { RefreshToken, AccessToken } = await generateAccessAndRefreshTokens(user._id);
@@ -155,11 +157,14 @@ const logoutUser = asyncHandler(async(req,res)=>{
     // remove the access token from cookies
     // remove the refresh token from database
     // send the response to the user
+    // we are using here the middleware which is use for condition for checking the user is login by refresh and access token
+
    await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
-                refreshToken: undefined
+            $unset:{
+                refreshToken:1
+                // this remove the field from the document
             }
         },{
             new:true
@@ -366,7 +371,7 @@ const getUserWatchHistory = asyncHandler(async(req,res)=>{
         [
             {
                 $match:{
-                    _id:new mongoose.Types.ObjectId(req.user?._id)
+                    _id: new mongoose.Types.ObjectId(req.user?._id)
                 }
             },{
                 $lookup:{
@@ -403,7 +408,7 @@ const getUserWatchHistory = asyncHandler(async(req,res)=>{
         ]
     );
     if (!user?.length) {
-        throw new ApiError(404, "User not found");
+        throw new ApiError(404, "UserWatch History is not found");
     }
     return res.status(200).json(new ApiResponse(200,user[0].watchHistory,"watch history fetched successfully"))
 })

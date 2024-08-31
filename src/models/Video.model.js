@@ -2,9 +2,9 @@ import mongoose, {Schema} from 'mongoose';
 import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const videoSchema = new Schema({
-     videoFile:{
+     video:{
         type:String,
-        required:[true,"video is required"]
+        required:true
      },
      thumbnail:{
         type:String,

@@ -291,28 +291,45 @@ const updateAvatarImage = asyncHandler(async(req,res)=>{
     .json(new ApiResponse(200,user,"Avatar is Uploaded Successfully"));
 });
 // updating the coverImage after logging the user...
-const updateCoverImage = asyncHandler(async (req,res)=>{
+const updateCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path;
-    if (!coverImageLocalPath){
-        throw new ApiError(400,"Cover Image file is missing");
+
+    if (!coverImageLocalPath) {
+        throw new ApiError(400, "Cover Image file is missing");
     }
-    const coverImage = uploadOnCloudinary(coverImageLocalPath);
-    if (!coverImage.url){
-        throw new ApiError(400,"Cover Image upload failed");
+
+    // Upload the image to Cloudinary
+    let coverImage;
+    try {
+        coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    } catch (error) {
+        throw new ApiError(500, "Cover Image upload failed");
     }
+
+    if (!coverImage || !coverImage.url) {
+        throw new ApiError(500, "Cover Image upload failed");
+    }
+
+    // Update the user's cover image in the database
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
-                coverImage:coverImage.url
+            $set: {
+                coverImage: coverImage.url
             }
         },
         {
-            new:true
+            new: true
         }
     ).select("-password");
-    return res.status(200)
-    .json(new ApiResponse(200,user,"user coverImage update successfully"));
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, user, "User cover image updated successfully")
+    );
 });
 
 const getUserChannelProfile = asyncHandler(async(req,res)=>{

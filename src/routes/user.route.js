@@ -31,10 +31,14 @@ router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT,changeCurrentPassword);
 // test successfully
 router.route("/current-user").get(verifyJWT,getCurrentUser);
+// test successfully
 router.route("/update-account-details").patch(verifyJWT,updateAccountDetails);
+
 router.route("/update-avatar").patch(verifyJWT,upload.single("avatar"),updateAvatarImage);
+// test successfully
 router.route("/update-coverImage").patch(verifyJWT,upload.single("coverImage"),updateCoverImage);
 router.route("/channel/:userName").get(verifyJWT,getUserChannelProfile);
+// test successfully
 router.route("/watch-history").get(verifyJWT,getUserWatchHistory);
 
 export {router};

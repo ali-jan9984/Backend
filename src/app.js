@@ -24,8 +24,12 @@ app.use(cookieParser());
 import { router as userRouter } from './routes/user.route.js';
 import {router as videoRouter} from './routes/video.route.js';
 import {router as commentRouter} from './routes/comment.route.js';
+import {router as playlistRouter} from './routes/playlist.route.js';
+import {router as likeRouter} from './routes/like.route.js';
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/video",videoRouter);
 app.use("/api/v1/comment",commentRouter);
+app.use("/api/v1/playlist",playlistRouter);
+app.use("/api/v1/like",likeRouter);
 
 export { app };

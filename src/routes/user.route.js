@@ -33,12 +33,14 @@ router.route("/change-password").post(verifyJWT,changeCurrentPassword);
 router.route("/current-user").get(verifyJWT,getCurrentUser);
 // test successfully
 router.route("/update-account-details").patch(verifyJWT,updateAccountDetails);
-
+// test successfully
 router.route("/update-avatar").patch(verifyJWT,upload.single("avatar"),updateAvatarImage);
 // test successfully
 router.route("/update-coverImage").patch(verifyJWT,upload.single("coverImage"),updateCoverImage);
+// test successfully
 router.route("/channel/:userName").get(verifyJWT,getUserChannelProfile);
 // test successfully
 router.route("/watch-history").get(verifyJWT,getUserWatchHistory);
 
 export {router};
+// all test successfully

@@ -4,10 +4,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {Like} from '../models/Likes.model.js';
 import { Video } from "../models/Video.model.js";
 import {Tweet} from "../models/Tweets.model.js";
+import {Comment} from "../models/Comments.model.js";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    const { userId } = req.user;
+    const likeBy = req.user._id; // Corrected this line
 
     // Find the video by ID
     const video = await Video.findById(videoId);
@@ -16,7 +17,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     }
 
     // Check if the user already liked the video
-    const existingLike = await Like.findOne({ videoId, userId });
+    const existingLike = await Like.findOne({ videoId, likeBy });
     let message;
 
     if (existingLike) {
@@ -25,7 +26,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         message = "Like removed successfully";
     } else {
         // If like does not exist, add it
-        const newLike = new Like({ videoId, userId });
+        const newLike = new Like({ videoId, likeBy });
         await newLike.save();
         message = "Like added successfully";
     }
@@ -34,16 +35,24 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         new ApiResponse(200, message)
     );
 });
+
 const toggleCommentLike = asyncHandler(async(req,res)=>{
     const {commentId} = req.params;
-    const {userId} = req.user;
+    const likeBy = req.user._id;
     const comment = await Comment.findById(commentId);
+    console.log(comment);
     if(!comment){
         throw new ApiError(400,"comment not found for like")
     }
-    const like = await Like.findOne({commentId,userId});
-    if(!like){
-        throw new ApiError(400,"like not found on comment")
+    const existingLike = await Like.findOne({commentId,likeBy});
+    let message;
+    if(existingLike){
+        await Like.deleteOne({_id:existingLike._id});
+        message = "Like remove successfully"
+    }else{
+        const newLike = new Like({commentId,likeBy});
+        await newLike.save();
+        message = "Like added successfully"
     }
     return res.status(200)
     .json(

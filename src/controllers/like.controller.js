@@ -62,14 +62,21 @@ const toggleCommentLike = asyncHandler(async(req,res)=>{
 
 const toggleTweetLike = asyncHandler(async(req,res)=>{
     const {tweetId} = req.params;
-    const {userId} = req.user;
+    const likeBy = req.user._id;
     const tweet = await Tweet.findById(tweetId);
     if(!tweet){
         throw new ApiError(400,"tweet not found for like")
     }
-    const like = await Like.findOne({tweetId,userId});
-    if(!like){
-        throw new ApiError(400,"like not found on comment")
+    const existingLike = await Like.findOne({tweetId,likeBy});
+    let message;
+    if(existingLike){
+       await Like.deleteOne({_id:existingLike._id})
+       message = "like removed successfully" 
+    }
+    else{
+        const newLike = new Like({tweetId,likeBy})
+        await newLike.save();
+        message = "like added successfully"
     }
     return res.status(200)
     .json(
@@ -81,7 +88,7 @@ const likedVideos = asyncHandler(async (req, res) => {
     const { userId } = req.params;
 
     // Find likes associated with the user and populate the associated videos
-    const likes = await Like.find({ userId }).populate("videoId"); // Assuming 'videoId' is the field to populate
+    const likes = await Like.find({ userId }).populate("video"); // Assuming 'videoId' is the field to populate
 
     // Check if likes array is empty
     if (likes.length === 0) {

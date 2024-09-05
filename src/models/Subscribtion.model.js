@@ -1,5 +1,5 @@
 import mongoose,{Schema} from "mongoose";
-import { User } from "./User.model";
+import { User } from "./User.model.js";
 
 const SubscribtionSchema = new mongoose.Schema({
     subscriber:{
@@ -20,4 +20,4 @@ const SubscribtionSchema = new mongoose.Schema({
 {timestamps:true}
 );
 
-export const  Subscribtion = mongoose.model("Subscriber",SubscribtionSchema);
+export const  Subscription = mongoose.model("Subscription",SubscribtionSchema);

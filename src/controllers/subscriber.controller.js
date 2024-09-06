@@ -1,34 +1,38 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { Subscription } from "../models/Subscribtion.model.js";
+import {Subscription} from "../models/Subscribtion.model.js";
 
-const getAllSubscriber = asyncHandler(async(req,res)=>{
-    const subcritpion = await Subscription.find({}).populate("user");
-    if(!subcritpion){
-        throw new ApiError(404,"no subscriber found")
+const toggleSubscription = asyncHandler(async(req,res)=>{
+    const {channelId} = req.params;
+    const {subscriptionId} = req.user._id;
+    const subscription = await Subscription.findById(subscriptionId);
+    if(!subscription){
+        throw new ApiError(404,"subscriber not found")
     }
-    return res.status(200)
-    .json(
-        new ApiResponse(200,subcritpion,"subscriber fetched successfully")
-    )
-});
-
-const addSubscriber = asyncHandler(async(req,res)=>{
-    const {subscribedBy} = req.user._id;
-    const existingSubscriber = await Subscription.findOne({subscribedBy});
-    if(existingSubscriber){
-        throw new ApiError(400,"email already exists")
-    }
-    const newSubscriber = new Subscription({subscribedBy});
-    await newSubscriber.save();
-
-    return res.status(200)
-    .json(
-        new ApiResponse(200,newSubscriber,"channel subscribe successfully")
-    )
+    const 
 })
+
+const userChannelSubscribers = asyncHandler(async(req,res)=>{
+    const {channelId} = req.params;
+    const {subscriptionId} = req.body;
+    const subscription = await Subscription.findById(subscriptionId);
+    if(!subscription){
+        throw new ApiError(404,"no subscriber available")
+    }
+})
+
+const getSubscribedChannel = asyncHandler(async(req,res)=>{
+    const {channelId} = req.params;
+    const {subscriptionId} = req.user._id;
+    const subscription = await Subscription.findById(subscriptionId);
+    if(!subscription){
+        throw new ApiError(404,"no subscriber available")
+    }
+})
+
 export {
-    getAllSubscriber
-    ,addSubscriber
+    toggleSubscription,
+    userChannelSubscribers,
+    getSubscribedChannel,
 }

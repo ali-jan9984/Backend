@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { deletePlaylist} from "../controllers/playlist.controller.js";
+import { verifyJWT } from "../middlewares/AUTH.middlewares.js";
+import {createPlaylist} from "../controllers/playlist.controller.js";
 
 const router = Router();
 
-router.route('deletePlaylist').delete(deletePlaylist);
+router.route("/createPlaylist").post(verifyJWT,createPlaylist);
 
 export {router};

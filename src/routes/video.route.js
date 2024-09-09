@@ -1,5 +1,5 @@
 import {upload} from '../middlewares/Multer.middleware.js';
-import { changeThumbnail, deleteVideo, getAllVideos, getVideoById, publishVideo,togglePublisher,updateVideoData,videoViews} from "../controllers/video.controllers.js";
+// import { changeThumbnail, deleteVideo, getAllVideos, getVideoById, publishVideo,togglePublisher,updateVideoData,videoViews} from "../controllers/video.controllers.js";
 import { Router } from "express";
 
 const router = Router();

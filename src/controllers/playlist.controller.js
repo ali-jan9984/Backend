@@ -2,6 +2,7 @@ import { Playlist } from '../models/Playlist.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import { Video } from '../models/Video.model.js';
 
 // Create a new playlist
 const createPlaylist = asyncHandler(async(req,res)=>{
@@ -52,8 +53,8 @@ const getUserPlaylist = asyncHandler(async(req,res)=>{
 });
 
 const getPlaylistById = asyncHandler(async(req,res)=>{
-    const id = req.params.id;
-    const playlist = await Playlist.findById(id);
+    const playlistId = req.params.id;
+    const playlist = await Playlist.findById(playlistId);
     if(!playlist){
         throw new ApiError(400,"playlist not found")
     }
@@ -61,7 +62,7 @@ const getPlaylistById = asyncHandler(async(req,res)=>{
 });
 
 const addVideoToPlayList = asyncHandler(async(req,res)=>{
-    const { playlistId, videoId } = req.body;
+    const { playlistId, videoId } = req.params;
     const userId = req.user._id;
 
     if (!playlistId || !videoId) {
@@ -100,9 +101,9 @@ const addVideoToPlayList = asyncHandler(async(req,res)=>{
         throw new ApiError(500, "Error adding video to playlist", error);
     }
 })
-// Delete a playlist by ID
+// Delete a video from playlist by ID
 const deleteVideoFromPlaylist = asyncHandler(async (req, res) => {
-    const { playlistId, videoId } = req.body;
+    const { playlistId, videoId } = req.params;
     const userId = req.user._id;
 
     if (!playlistId || !videoId) {
@@ -148,15 +149,18 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
     try {
         // Find the playlist and ensure it belongs to the user
-        const playlist = await Playlist.findOneAndDelete({ _id: playlistId, owner: userId });
+        const playlist = await Playlist.findOne({ _id: playlistId, owner: userId });
 
         if (!playlist) {
             throw new ApiError(404, "Playlist not found or you don't have permission to delete it");
         }
 
+        await playlist.remove(); // or Playlist.findByIdAndDelete(playlistId)
+
         return res.status(200).json(
             new ApiResponse(200, "Playlist deleted successfully", playlist)
         );
+
     } catch (error) {
         throw new ApiError(500, "Error deleting playlist", error);
     }

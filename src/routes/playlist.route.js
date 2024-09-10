@@ -13,6 +13,7 @@ router.route('/:playlistId/getPlaylistById').get(verifyJWT,getPlaylistById);
 router.route('/:playlistId/:videoId/addVideoToPlaylist').patch(verifyJWT,addVideoToPlayList);
 // test successfully
 router.route('/:playlistId/:videoId/deleteVideoFromPlaylist').delete(verifyJWT,deleteVideoFromPlaylist);
+// not check
 router.route('/:playlistId/deletePlaylist').delete(verifyJWT,deletePlaylist);
 
 export {router}

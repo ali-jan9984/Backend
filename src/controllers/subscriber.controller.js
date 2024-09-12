@@ -3,39 +3,50 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {Subscription} from "../models/Subscribtion.model.js";
 
-const toggleSubscription = asyncHandler(async(req,res)=>{
-    // take the id from request.params
+const toggleSubscription = asyncHandler(async (req, res) => {
+    // Take the channelId from request.params
     const { channelId } = req.params;
-    // take the id form the req.user
+    // Take the userId from req.user
     const userId = req.user._id;
-// condition on the 
+
+    // Check if channelId is provided
     if (!channelId) {
         throw new ApiError(400, "Channel ID is required");
     }
-    // check whether the subscription is exisit or not
-    const existingSubscription = await Subscription.findOne({
-        subscriber: userId,
-        channel: channelId
-    });
-// if the subscription exits it will remove from the database
-    if (existingSubscription) {
-        // If subscription exists, remove it
-        await Subscription.findByIdAndDelete(existingSubscription._id);
-        return res.status(200).json(
-            new ApiResponse(200, "Subscription removed successfully", null)
-        );
-        // if the subscription doesnot exits it will be made
-    } else {
-        // If subscription doesn't exist, create it
+
+    // Find the subscription document by channelId
+    const subscription = await Subscription.findOne({ channel: channelId });
+
+    if (!subscription) {
+        // If no subscription document exists for the channel, create one and add the subscriber
         const newSubscription = await Subscription.create({
-            subscriber: userId,
-            channel: channelId
+            channel: channelId,
+            subscribers: [userId]
         });
         return res.status(201).json(
             new ApiResponse(201, "Subscribed successfully", newSubscription)
         );
     }
-})
+
+    // Check if the user is already subscribed (exists in the subscribers array)
+    const isSubscribed = Subscription.subscribers.includes(userId);
+
+    if (isSubscribed) {
+        // If the user is already subscribed, remove them from the subscribers array
+        Subscription.subscribers.pull(userId);
+        await Subscription.save();
+        return res.status(200).json(
+            new ApiResponse(200, "Subscription removed successfully", subscription)
+        );
+    } else {
+        // If the user is not subscribed, add them to the subscribers array
+        Subscription.subscribers.push(userId);
+        await Subscription.save();
+        return res.status(201).json(
+            new ApiResponse(201, "Subscribed successfully", subscription)
+        );
+    }
+});
 
 const userChannelSubscribers = asyncHandler(async(req,res)=>{
     const { channelId } = req.params;
@@ -66,11 +77,7 @@ const userChannelSubscribers = asyncHandler(async(req,res)=>{
 
 const getSubscribedChannel = asyncHandler(async(req,res)=>{
     // ...
-    const { userId } = req.user;
-
-    if (!userId) {
-        throw new ApiError(400, "User ID is required");
-    }
+    const { userId } = req.user._id;
 
     const subscribedChannels = await Subscription.find({ subscriber: userId })
         .populate('channel', 'username');

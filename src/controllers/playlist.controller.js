@@ -146,24 +146,14 @@ const deletePlaylist = asyncHandler(async (req, res) => {
     if (!playlistId) {
         throw new ApiError(400, "Playlist ID is required");
     }
-
-    try {
-        // Find the playlist and ensure it belongs to the user
-        const playlist = await Playlist.findOne({ _id: playlistId, owner: userId });
-
-        if (!playlist) {
-            throw new ApiError(404, "Playlist not found or you don't have permission to delete it");
+        const playlist = await Playlist.findOneAndDelete({id:playlistId,owner:userId});
+        if(!playlist){
+            throw new ApiError(400,'playlist is not found')
         }
-
-        await playlist.remove(); // or Playlist.findByIdAndDelete(playlistId)
-
-        return res.status(200).json(
-            new ApiResponse(200, "Playlist deleted successfully", playlist)
-        );
-
-    } catch (error) {
-        throw new ApiError(500, "Error deleting playlist", error);
-    }
+        return res.status(200)
+        .json(
+            new ApiResponse(200,'playlist delete successfully')
+        )
 });
 
 // Update a playlist

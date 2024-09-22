@@ -7,7 +7,8 @@ import {
     getAllVideos,
     videoUpload, 
     videoViews, 
-    togglePublisherStatus
+    togglePublisherStatus,
+    getVideoAnalytics
 } from "../controllers/video.controllers.js";
 import { Router } from "express";
 
@@ -29,6 +30,7 @@ router.route("/:videoId/thumbnail").patch(changeThumbnail);
 router.route("/:videoId/deleteVideo").delete(deleteVideo);
 router.route("/:videoId/views").get(videoViews);
 router.route("/:vidoeId/togglePublisher").patch(verifyJWT,togglePublisherStatus);
+router.route("/analytics").get(getVideoAnalytics);
 
 export { router };
 

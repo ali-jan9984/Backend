@@ -35,14 +35,14 @@ const videoUpload = asyncHandler(async (req, res) => {
     // now we take the video from and also generate the duration for it
     // now take the thumbnail for the video
 try {    
-        const { title, description, isPublished } = req.body;
+        const { title, description} = req.body;
         if (!title) {
             throw new ApiError(400, "Title is required");
         }
         const thumbnailFile =req.file?.thumbnail?.[0].path;
         const videoFile = req.file?.video?.[0]?.path;
 
-        console.log(thumbnail,videoFile);
+        // console.log(thumbnail,videoFile);
     
         if (!thumbnailFile) {
             throw new ApiError(400, "Thumbnail is required");
@@ -65,11 +65,9 @@ try {
         const newVideo = await Video.create({
             title,
             description,
-            isPublished,
             thumbnail: thumbnail.url,
             video: video.url,
         });
-    
         // Clean up files after upload
         fs.unlinkSync(thumbnailFile);
         fs.unlinkSync(videoFile);
@@ -138,6 +136,32 @@ const deleteVideo = asyncHandler(async(req,res)=>{
         new ApiResponse(200,"video removed successfully")
     )
 });
+
+const togglePublisherStatus = asyncHandler(async(req,res)=>{
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You don't have permission to toggle this video's publish status");
+    }
+    if(video.isPublished === false){
+        video.isPublished = true;
+        await video.save();
+       
+    }
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { isPublished: video.isPublished },
+                `Video ${video.isPublished ? 'published' : 'unpublished'} successfully`
+            )
+        );
+});
 export {
     getAllVideos,
     videoUpload,
@@ -145,4 +169,5 @@ export {
     ChangeVideoData,
     changeThumbnail,
     deleteVideo,
+    togglePublisherStatus
 };

@@ -1,11 +1,13 @@
 import { upload } from '../middlewares/Multer.middleware.js';
+import { verifyJWT } from '../middlewares/AUTH.middlewares.js';
 import { 
     changeThumbnail, 
     ChangeVideoData, 
     deleteVideo, 
     getAllVideos,
     videoUpload, 
-    videoViews 
+    videoViews, 
+    togglePublisherStatus
 } from "../controllers/video.controllers.js";
 import { Router } from "express";
 
@@ -21,10 +23,12 @@ router.route("/uploadVideo").post(
 
 // Secure routes
 router.route('/videos').get(getAllVideos);
+router.route("/publish-video").post(videoUpload);
 router.route("/:videoId/changeVideoData").patch(ChangeVideoData);
 router.route("/:videoId/thumbnail").patch(changeThumbnail);
 router.route("/:videoId/deleteVideo").delete(deleteVideo);
 router.route("/:videoId/views").get(videoViews);
+router.route("/:vidoeId/togglePublisher").patch(verifyJWT,togglePublisherStatus);
 
 export { router };
 
